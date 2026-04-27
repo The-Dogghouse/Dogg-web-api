@@ -1,31 +1,36 @@
 use axum::{Json, Router, routing::get};
 
-use serde_json::json;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use sqlx;
 use sqlx::SqlitePool;
 use sqlx::sqlite;
 
-use std::str::FromStr;
+use tower_http::cors::CorsLayer;
+
 use axum::extract::State;
 use axum::http::StatusCode;
+use axum::http::{HeaderValue, Method};
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use chrono::{DateTime, Utc};
 use sqlx::types::Uuid;
+use std::str::FromStr;
 
 use validator::{Validate, ValidationErrors};
 
-
 enum AppError {
     Database(sqlx::Error),
-    BadRequest(String)
+    BadRequest(String),
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
-            AppError::Database(msg) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Database error {}", msg).to_string()),
+            AppError::Database(msg) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Database error {}", msg).to_string(),
+            ),
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
         };
 
@@ -45,19 +50,17 @@ impl From<validator::ValidationErrors> for AppError {
     }
 }
 
-
 #[derive(sqlx::FromRow, Serialize)]
 struct LeaderboardEntry {
     id: Uuid,
     name: String,
     clicks: i64,
-    created_at: DateTime<Utc>
+    created_at: DateTime<Utc>,
 }
 
 async fn get_leaderboard(
-    State(pool): State<SqlitePool>
+    State(pool): State<SqlitePool>,
 ) -> Result<Json<Vec<LeaderboardEntry>>, AppError> {
-
     let results = sqlx::query_as!(
         LeaderboardEntry,
         r#"select id as "id: Uuid",
@@ -66,44 +69,44 @@ async fn get_leaderboard(
        created_at as "created_at: DateTime<Utc>"
 from leaderboard
 order by clicks desc;"#
-    ).fetch_all(&pool)
-        .await?;
+    )
+    .fetch_all(&pool)
+    .await?;
 
     Ok(Json(results))
 }
 
-
 #[derive(Deserialize, Validate)]
-struct AddLeaderboardEntry{
+struct AddLeaderboardEntry {
     id: Uuid,
     #[validate(length(min = 1, max = 128))]
     name: String,
     #[validate(range(min = 1))]
-    clicks: i64
+    clicks: i64,
 }
 
 #[derive(Serialize)]
-struct AddLeaderboardEntryResponse{
-    id: Uuid
+struct AddLeaderboardEntryResponse {
+    id: Uuid,
 }
 
 async fn add_leaderboard_entry(
     State(pool): State<SqlitePool>,
-    Json(body): Json<AddLeaderboardEntry>
-) -> Result<Json<AddLeaderboardEntryResponse>, AppError>{
+    Json(body): Json<AddLeaderboardEntry>,
+) -> Result<Json<AddLeaderboardEntryResponse>, AppError> {
     body.validate()?;
     let now = Utc::now();
-    sqlx::query("insert or replace into leaderboard (id, name, clicks, created_at) values (?, ?, ?, ?);")
-        .bind(&body.id)
-        .bind(&body.name)
-        .bind(&body.clicks)
-        .bind(now)
-        .execute(&pool)
-        .await?;
+    sqlx::query(
+        "insert or replace into leaderboard (id, name, clicks, created_at) values (?, ?, ?, ?);",
+    )
+    .bind(&body.id)
+    .bind(&body.name)
+    .bind(&body.clicks)
+    .bind(now)
+    .execute(&pool)
+    .await?;
 
-    Ok(Json(AddLeaderboardEntryResponse{
-        id: body.id
-    }))
+    Ok(Json(AddLeaderboardEntryResponse { id: body.id }))
 }
 
 #[tokio::main]
@@ -116,11 +119,15 @@ async fn main() {
 
     sqlx::migrate!("db/migrations").run(&pool).await.unwrap();
 
-    let app =
-        Router::new()
-            .route("/api/leaderboard", get(get_leaderboard))
-            .route("/api/leaderboard", post(add_leaderboard_entry))
-            .with_state(pool);
+    let cors = CorsLayer::new()
+        .allow_origin("https://dogg-house.net".parse::<HeaderValue>().unwrap())
+        .allow_methods([Method::GET, Method::POST]);
+
+    let app = Router::new()
+        .route("/api/leaderboard", get(get_leaderboard))
+        .route("/api/leaderboard", post(add_leaderboard_entry))
+        .layer(cors)
+        .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
