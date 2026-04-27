@@ -1,16 +1,16 @@
-use axum::{Json, Router, routing::get};
+use axum::{routing::get, Json, Router};
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx;
-use sqlx::SqlitePool;
 use sqlx::sqlite;
+use sqlx::SqlitePool;
 
 use tower_http::cors::CorsLayer;
 
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::http::{HeaderValue, Method};
+use axum::http::HeaderValue;
 use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use chrono::{DateTime, Utc};
@@ -121,7 +121,8 @@ async fn main() {
 
     let cors = CorsLayer::new()
         .allow_origin("https://dogg-house.net".parse::<HeaderValue>().unwrap())
-        .allow_methods(tower_http::cors::Any);
+        .allow_methods(tower_http::cors::Any)
+        .allow_headers(tower_http::cors::Any);
 
     let app = Router::new()
         .route("/api/leaderboard", get(get_leaderboard))
