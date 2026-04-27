@@ -121,7 +121,7 @@ async fn main() {
 
     let cors = CorsLayer::new()
         .allow_origin("https://dogg-house.net".parse::<HeaderValue>().unwrap())
-        .allow_methods([Method::GET, Method::POST]);
+        .allow_methods(tower_http::cors::Any);
 
     let app = Router::new()
         .route("/api/leaderboard", get(get_leaderboard))
