@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=/opt/Dogg-web-api
-ExecStart=/opt/Dogg-web-api/target/release
+ExecStart=/opt/Dogg-web-api/target/release/Dogg-web-backend
 Restart=on-failure
 RestartSec=5
 
