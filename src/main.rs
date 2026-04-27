@@ -76,7 +76,7 @@ order by clicks desc;"#
 #[derive(Deserialize, Validate)]
 struct AddLeaderboardEntry{
     id: Uuid,
-    #[validate(length(min = 1))]
+    #[validate(length(min = 1, max = 128))]
     name: String,
     #[validate(range(min = 1))]
     clicks: i64
