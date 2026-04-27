@@ -1,0 +1,22 @@
+[Unit]
+Description=Dogg Web Backend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/Dogg-web-api
+ExecStart=/opt/Dogg-web-api/target/release
+Restart=on-failure
+RestartSec=5
+
+Environment=RUST_LOG=info
+Environment=RUST_BACKTRACE=1
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
