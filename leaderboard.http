@@ -1,0 +1,39 @@
+GET http://localhost:3000/leaderboard
+Accept: application/json
+
+###
+POST http://localhost:3000/leaderboard
+Content-Type: application/json
+
+{
+  "id": "019dcba4-0b11-7b75-b7cf-f6fcb29f65bc",
+  "name": "Rin",
+  "clicks": 6500
+}
+
+###
+
+###
+POST http://localhost:3000/leaderboard
+Content-Type: application/json
+
+{
+  "id": "019dcbb3-a0c6-7381-9679-04d49f057af5",
+  "name": "Midge",
+  "clicks": 5000
+}
+
+###
+
+
+### Bad Request
+POST http://localhost:3000/leaderboard
+Content-Type: application/json
+
+{
+  "id": "019dcba4-0b11-7b75-b7cf-f6fcb29f65bc",
+  "name": "Rin",
+  "clicks": -1
+}
+
+###
