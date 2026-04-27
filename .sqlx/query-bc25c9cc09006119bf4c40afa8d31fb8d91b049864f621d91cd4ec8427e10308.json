@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "select id as \"id: Uuid\",\n       name,\n       clicks,\n       created_at as \"created_at: DateTime<Utc>\"\nfrom leaderboard\norder by clicks desc;",
+  "describe": {
+    "columns": [
+      {
+        "name": "id: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob",
+        "origin": {
+          "Table": {
+            "table": "leaderboard",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "leaderboard",
+            "name": "name"
+          }
+        }
+      },
+      {
+        "name": "clicks",
+        "ordinal": 2,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "leaderboard",
+            "name": "clicks"
+          }
+        }
+      },
+      {
+        "name": "created_at: DateTime<Utc>",
+        "ordinal": 3,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "leaderboard",
+            "name": "created_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "bc25c9cc09006119bf4c40afa8d31fb8d91b049864f621d91cd4ec8427e10308"
+}
